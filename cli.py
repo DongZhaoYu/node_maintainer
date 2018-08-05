@@ -12,7 +12,10 @@ Arg.__new__.__defaults__ = (None, None, None, None, None, None, None)
 def clean(args):
     print("clean with %s" % str(args))
     cleaner = Cleaner(host=args.host, user=args.user, passwrd=args.passwrd)
+    print("-----start to clean the tmp data-----")
     cleaner.clean_tmp_data()
+    print("-----start to clean the docker cache-----")
+    cleaner.clean_docker_cache()
     pass
 
 
