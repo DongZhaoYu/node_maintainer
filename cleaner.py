@@ -38,7 +38,6 @@ def run_cmd_remote(remote_server, cmd, asroot=False):
 
 class Cleaner(object):
     def __init__(self, host="localhost", user="root", passwrd=""):
-        super.__init__()
         self.remote_server = {
             "host": host,
             "user": user,
