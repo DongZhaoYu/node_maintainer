@@ -25,11 +25,11 @@ def run_cmd_remote(remote_server, cmd, asroot=False):
         stdin.flush()
 
     print("execute command %s on host %s." % (cmd, ip))
-    output = [line.encode("utf-8").strip("\n") for line in stdout]
-    error = [line.encode("utf-8").strip("\n") for line in stderr]
+    output = [line.encode("utf-8").strip("\r\n") for line in stdout]
+    error = [line.encode("utf-8").strip("\r\n") for line in stderr]
 
     ssh.close()
-    print("output from the command : %s error from the command : %s." % (str(output), str(error)))
+    print("output from the command : %s, error from the command : %s." % (str(output), str(error)))
     return output, error
 
 
@@ -63,7 +63,7 @@ class Cleaner(object):
         for path in paths:
             cmd = "$(( $(date +%s) - $(stat -c %Y {0}) ))".format(path)
             out, err = run_cmd_remote(self.remote_server, cmd)
-            
+
             if len(err) > 0 or len(out) == 0:
                 print("error occurs when cleaning path, the error is: %s" % str(err))
                 return
@@ -71,7 +71,7 @@ class Cleaner(object):
             try:
                 past_hour = int(out[0]) / 3600
             except ValueError:
-                print("failed to parse the past time: %s" % output)
+                print("failed to parse the past time: %s" % str(out))
                 past_hour = 0
 
             if past_hour >= 24:
