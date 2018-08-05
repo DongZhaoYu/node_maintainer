@@ -1,6 +1,7 @@
 
 from collections import namedtuple
 import argparse
+from cleaner import Cleaner
 
 Arg = namedtuple(
     "Arg", ["flags", "help", "action", "default", "nargs", "type", "choices", "metavar"]
@@ -10,6 +11,8 @@ Arg.__new__.__defaults__ = (None, None, None, None, None, None, None)
 
 def clean(args):
     print("clean with %s" % str(args))
+    cleaner = Cleaner(host=args.host, user=args.user, pwd=args.pwd)
+    cleaner.clean_tmp_data()
     pass
 
 

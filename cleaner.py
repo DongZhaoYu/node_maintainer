@@ -45,7 +45,7 @@ class Cleaner(object):
             "passwrd": passwd
         }
 
-    def clean_tmp_dat(self):
+    def clean_tmp_data(self):
         cmd = "ls /tmp/pai-root/code"
         stdout, stderr = run_cmd_remote(self.remote_server, cmd, False)
 
