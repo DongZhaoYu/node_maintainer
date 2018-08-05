@@ -11,7 +11,7 @@ Arg.__new__.__defaults__ = (None, None, None, None, None, None, None)
 
 def clean(args):
     print("clean with %s" % str(args))
-    cleaner = Cleaner(host=args.host, user=args.user, pwd=args.pwd)
+    cleaner = Cleaner(host=args.host, user=args.user, passwrd=args.passwrd)
     cleaner.clean_tmp_data()
     pass
 
@@ -20,7 +20,7 @@ class CLIFactory(object):
     args = {
         "host_name": Arg(("--host",), "the name of the host", type=str),
         "user_name": Arg(("--user",), "the name of the user", type=str),
-        "password": Arg(("--pwd",), "the password of the host", type=str)
+        "password": Arg(("--passwrd",), "the password of the host", type=str)
     }
 
     subparsers = (
