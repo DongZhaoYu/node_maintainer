@@ -15,9 +15,9 @@ def clean(args):
 
 class CLIFactory(object):
     args = {
-        "host_name": Arg(("-u, --host",), "the name of the host", type=str, default="localhost"),
-        "user_name": Arg(("-u, --user",), "the name of the user", type=str, default="root"),
-        "password": Arg(("-p, --pwd",), "the password of the host", type=str)
+        "host_name": Arg(("--host",), "the name of the host", type=str),
+        "user_name": Arg(("--user",), "the name of the user", type=str),
+        "password": Arg(("--pwd",), "the password of the host", type=str)
     }
 
     subparsers = (
