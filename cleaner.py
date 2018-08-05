@@ -46,13 +46,13 @@ class Cleaner(object):
         cmd = "ls {0}".format(code_path)
         out, err = run_cmd_remote(self.remote_server, cmd, False)
         if len(out) > 0:
-            self.clean_paths([code_path + line for line in out])
+            self.clean_paths([code_path + file for line in out for file in line.split("\t")])
 
         log_path = "/tmp/pai-root/log/"
         cmd = "ls {0}".format(log_path)
         out, err = run_cmd_remote(self.remote_server, cmd, False)
         if len(out) > 0:
-            self.clean_paths([log_path + line for line in out])
+            self.clean_paths([log_path + file for line in out for file in line.split("\t")])
 
     def clean_docker_cache(self):
         cmd = "sudo docker system prune -a -f"
