@@ -42,17 +42,17 @@ class Cleaner(object):
         }
 
     def clean_tmp_data(self):
-        cmd = "ls /tmp/pai-root/code"
+        code_path = "/tmp/pai-root/code/"
+        cmd = "ls {0}".format(code_path)
         out, err = run_cmd_remote(self.remote_server, cmd, False)
-
         if len(out) > 0:
-            self.clean_paths(out)
+            self.clean_paths([code_path + line for line in out])
 
-        cmd = "ls /tmp/pai-root/log"
+        log_path = "/tmp/pai-root/log/"
+        cmd = "ls {0}".format(log_path)
         out, err = run_cmd_remote(self.remote_server, cmd, False)
-
         if len(out) > 0:
-            self.clean_paths(out)
+            self.clean_paths([log_path + line for line in out])
 
     def clean_docker_cache(self):
         cmd = "sudo docker system prune -a -f"
