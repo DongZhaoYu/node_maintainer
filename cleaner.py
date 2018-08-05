@@ -61,7 +61,7 @@ class Cleaner(object):
     def clean_paths(self, paths):
         print("will clean the paths: %s" % str(paths))
         for path in paths:
-            cmd = "$(( $(date +%s) - $(stat -c %Y {0}) ))".format(path)
+            cmd = "echo $(( $(date +%s) - $(stat -c %Y {0}) ))".format(path)
             out, err = run_cmd_remote(self.remote_server, cmd)
 
             if len(err) > 0 or len(out) == 0:
