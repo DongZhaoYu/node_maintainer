@@ -10,9 +10,9 @@ def run_cmd_remote(remote_server, cmd, asroot=False):
     :param asroot:
     :return:
     """
-    ip = str(remote_server["ip"])
-    name = str(remote_server["name"])
-    pwd = str(remote_server["password"])
+    ip = str(remote_server["host"])
+    name = str(remote_server["user"])
+    pwd = str(remote_server["passwrd"])
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -36,47 +36,48 @@ def run_cmd_remote(remote_server, cmd, asroot=False):
     return output, error
 
 
-def clean_docker_cache(remote_server):
-    cmd = "sudo docker system prune -a -f"
-    run_cmd_remote(remote_server, cmd, True)
+class Cleaner(object):
+    def __init__(self, host="localhost", user="root", passwd=""):
+        super.__init__()
+        self.remote_server = {
+            "host": host,
+            "user": user,
+            "passwrd": passwd
+        }
 
+    def clean_tmp_dat(self):
+        cmd = "ls /tmp/pai-root/code"
+        stdout, stderr = run_cmd_remote(self.remote_server, cmd, False)
 
-def clean_paths(remote_server, paths):
-    print("will clean the paths: %s" % str(paths))
-    for path in paths:
-        cmd = "$(( $(data +%s) - $(stat -c %Y {0}) ))".format(path)
-        stdout, stderr = run_cmd_remote(remote_server, cmd)
-        output = stdout.read().encode('utf-8').strip("\n")
-        try:
-            past_hour = int(output) / 3600
-        except ValueError:
-            print("failed to parse the past time: %s" % output)
-            past_hour = 0
+        lines = [line.encode('utf-8').strip("\n") for line in stdout]
+        self.clean_paths(lines)
 
-        if past_hour >= 24:
-            print("this directory has not been accessed in %s hours and will be deleted." % past_hour)
-            cmd = "sudo rm -fr {0}".format(path)
-            stdout, stderr = run_cmd_remote(remote_server, cmd, True)
-            error = stderr.read()
-            if len(error) > 0:
-                print("failed to delete the {0}, the error is : {1}".format(path, error))
+        cmd = "ls /tmp/pai-root/log"
+        stdout, stderr = run_cmd_remote(self.remote_server, cmd, False)
 
+        lines = [line.encode('utf-8').strip("\n") for line in stdout]
+        self.clean_paths(lines)
 
-def clean_tmp_dir(remote_server):
-    cmd = "ls /tmp/pai-root/code"
-    stdout, stderr = run_cmd_remote(remote_server, cmd, False)
+    def clean_docker_cache(self):
+        cmd = "sudo docker system prune -a -f"
+        run_cmd_remote(self.remote_server, cmd, True)
 
-    lines = [line.encode('utf-8').strip("\n") for line in stdout]
-    clean_paths(lines)
+    def clean_paths(self, paths):
+        print("will clean the paths: %s" % str(paths))
+        for path in paths:
+            cmd = "$(( $(data +%s) - $(stat -c %Y {0}) ))".format(path)
+            stdout, stderr = run_cmd_remote(self.remote_server, cmd)
+            output = stdout.read().encode('utf-8').strip("\n")
+            try:
+                past_hour = int(output) / 3600
+            except ValueError:
+                print("failed to parse the past time: %s" % output)
+                past_hour = 0
 
-    cmd = "ls /tmp/pai-root/log"
-    stdout, stderr = run_cmd_remote(remote_server, cmd, False)
-
-    lines = [line.encode('utf-8').strip("\n") for line in stdout]
-    clean_paths(lines)
-
-
-if __name__ == "__main__":
-    print("start to run the cleaner")
-    config = {"ip": "10.190.151.29", "name": "zhdo", "password": "Pass_word"}
-    clean_docker_cache(config)
+            if past_hour >= 24:
+                print("this directory has not been accessed in %s hours and will be deleted." % past_hour)
+                cmd = "sudo rm -fr {0}".format(path)
+                stdout, stderr = run_cmd_remote(self.remote_server, cmd, True)
+                error = stderr.read()
+                if len(error) > 0:
+                    print("failed to delete the {0}, the error is : {1}".format(path, error))
