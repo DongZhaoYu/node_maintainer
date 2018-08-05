@@ -25,14 +25,11 @@ def run_cmd_remote(remote_server, cmd, asroot=False):
         stdin.flush()
 
     print("execute command %s on host %s." % (cmd, ip))
-    output = ""
-    for msg in stdout:
-        output += msg
-    error = ""
-    for msg in stderr:
-        error += msg
+    output = [line.encode("utf-8").strip("\n") for line in stdout]
+    error = [line.encode("utf-8").strip("\n") for line in stderr]
+
     ssh.close()
-    print("output from the command : %s error from the command : %s." % (output, error))
+    print("output from the command : %s error from the command : %s." % (str(output), str(error)))
     return output, error
 
 
@@ -46,16 +43,16 @@ class Cleaner(object):
 
     def clean_tmp_data(self):
         cmd = "ls /tmp/pai-root/code"
-        stdout, stderr = run_cmd_remote(self.remote_server, cmd, False)
+        out, err = run_cmd_remote(self.remote_server, cmd, False)
 
-        lines = [line.encode('utf-8').strip("\n") for line in stdout]
-        self.clean_paths(lines)
+        if len(out) > 0:
+            self.clean_paths(out)
 
         cmd = "ls /tmp/pai-root/log"
-        stdout, stderr = run_cmd_remote(self.remote_server, cmd, False)
+        out, err = run_cmd_remote(self.remote_server, cmd, False)
 
-        lines = [line.encode('utf-8').strip("\n") for line in stdout]
-        self.clean_paths(lines)
+        if len(out) > 0:
+            self.clean_paths(out)
 
     def clean_docker_cache(self):
         cmd = "sudo docker system prune -a -f"
@@ -64,11 +61,15 @@ class Cleaner(object):
     def clean_paths(self, paths):
         print("will clean the paths: %s" % str(paths))
         for path in paths:
-            cmd = "$(( $(data +%s) - $(stat -c %Y {0}) ))".format(path)
-            stdout, stderr = run_cmd_remote(self.remote_server, cmd)
-            output = stdout.read().encode('utf-8').strip("\n")
+            cmd = "$(( $(date +%s) - $(stat -c %Y {0}) ))".format(path)
+            out, err = run_cmd_remote(self.remote_server, cmd)
+            
+            if len(err) > 0 or len(out) == 0:
+                print("error occurs when cleaning path, the error is: %s" % str(err))
+                return
+
             try:
-                past_hour = int(output) / 3600
+                past_hour = int(out[0]) / 3600
             except ValueError:
                 print("failed to parse the past time: %s" % output)
                 past_hour = 0
@@ -76,7 +77,6 @@ class Cleaner(object):
             if past_hour >= 24:
                 print("this directory has not been accessed in %s hours and will be deleted." % past_hour)
                 cmd = "sudo rm -fr {0}".format(path)
-                stdout, stderr = run_cmd_remote(self.remote_server, cmd, True)
-                error = stderr.read()
-                if len(error) > 0:
-                    print("failed to delete the {0}, the error is : {1}".format(path, error))
+                _, err = run_cmd_remote(self.remote_server, cmd, True)
+                if len(err) > 0:
+                    print("failed to delete the {0}, the error is : {1}".format(path, err))
