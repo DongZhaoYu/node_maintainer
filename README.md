@@ -4,7 +4,7 @@ To maintain a node in a proper status. Usually it may need some real time mainte
 
 ## usage
 
-```python
+```pydocstring
 python maintainer.py {clean} [options]
 ```
 
@@ -12,7 +12,7 @@ python maintainer.py {clean} [options]
 
 #### clean
 this will clean the cached temporary data in the node
-```python
+```pydocstring
 python ./maintainer.py clean [--host host_name] [--user user_name] [--passwrd  password]
 ```
 If the host name, user name or the password is not provided in the command. The configured value in the configure file will be used.
